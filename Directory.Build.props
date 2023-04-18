@@ -1,0 +1,6 @@
+﻿<Project>
+    <PropertyGroup>
+        <AssemblyName>Showtime.$(MSBuildProjectName)</AssemblyName>
+        <RootNamespace>Showtime.$(MSBuildProjectName)</RootNamespace>
+    </PropertyGroup>
+</Project>
