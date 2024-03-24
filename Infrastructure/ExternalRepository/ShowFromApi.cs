@@ -1,4 +1,4 @@
-﻿using Showtime.Domain;
+﻿using Showtime.Core.Commands;
 
 namespace Showtime.Infrastructure.ExternalRepository;
 public record ShowFromApi

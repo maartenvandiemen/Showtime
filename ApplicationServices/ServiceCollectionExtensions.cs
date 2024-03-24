@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
+using Showtime.Core.Commands;
 
 namespace Showtime.ApplicationServices
 {

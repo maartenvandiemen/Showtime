@@ -1,5 +1,4 @@
-﻿using Showtime.ApplicationServices;
-using Showtime.Domain;
+﻿using Showtime.Core.Commands;
 using Showtime.Infrastructure;
 using Showtime.Infrastructure.Datastorage;
 using Showtime.Infrastructure.ExternalRepository;

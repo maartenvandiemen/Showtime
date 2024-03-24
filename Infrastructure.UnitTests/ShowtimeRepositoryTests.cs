@@ -1,6 +1,6 @@
 ﻿using AutoFixture;
 using Microsoft.EntityFrameworkCore;
-using Showtime.Domain;
+using Showtime.Core.Domain;
 using Showtime.Infrastructure.Datastorage;
 using Testing;
 

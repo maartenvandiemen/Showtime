@@ -1,6 +1,4 @@
-﻿using Showtime.Domain;
-
-namespace Showtime.ApplicationServices;
+﻿namespace Showtime.Core.Commands;
 
 public interface ICommandHandler<TCommand> where TCommand : Command
 {

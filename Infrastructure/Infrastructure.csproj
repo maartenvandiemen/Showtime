@@ -19,8 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ApplicationServices\ApplicationServices.csproj" />
-    <ProjectReference Include="..\Domain.Common\Domain.csproj" />
+    <ProjectReference Include="..\ApplicationServices\Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

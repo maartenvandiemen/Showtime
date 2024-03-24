@@ -1,4 +1,5 @@
 ﻿using AutoFixture;
+using Showtime.Core.Commands;
 using Testing;
 
 namespace Showtime.Domain.Testing;

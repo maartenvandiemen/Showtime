@@ -1,4 +1,5 @@
-﻿ namespace Showtime.Domain;
+﻿namespace Showtime.Core.Commands;
+
 public record RegisterShow : Command
 {
     public RegisterShow()

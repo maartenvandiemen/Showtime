@@ -19,9 +19,4 @@
     </PackageReference>
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Domain.Common\Domain.csproj" />
-    <ProjectReference Include="..\Domain.Testing\Domain.Testing.csproj" />
-  </ItemGroup>
-
 </Project>

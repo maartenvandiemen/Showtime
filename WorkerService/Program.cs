@@ -1,8 +1,5 @@
-using System.Net;
-using Polly;
 using Showtime.ApplicationServices;
 using Showtime.Infrastructure;
-using Showtime.Infrastructure.ExternalRepository;
 using Showtime.WorkerService;
 using WorkerService;
 
@@ -13,9 +10,7 @@ IHost host = Host.CreateDefaultBuilder(args)
         services.AddInfrastructure(context.Configuration, true);
 
         services.AddHostedService<Worker>();
-        services.AddTransient<IShowScraperService, ShowScraperService>();
-
-        
+        services.AddTransient<IShowScraperService, ShowScraperService>();        
     })
     .Build();
 

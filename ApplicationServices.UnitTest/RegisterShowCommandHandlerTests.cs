@@ -1,9 +1,10 @@
 using AutoFixture;
-using Showtime.Domain.Testing;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Showtime.ApplicationServices;
-using Showtime.Domain;
+using Showtime.Core.Commands;
+using Showtime.Core.Domain;
+using Showtime.Domain.Testing;
 using Testing;
 
 namespace ApplicationServices.UnitTest;

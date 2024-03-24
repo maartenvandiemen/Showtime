@@ -1,6 +1,6 @@
 ﻿using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
-using Showtime.Domain;
+using Showtime.Core.Domain;
 using Showtime.Infrastructure.Datastorage.TypeConfigurations;
 
 namespace Showtime.Infrastructure.Datastorage;

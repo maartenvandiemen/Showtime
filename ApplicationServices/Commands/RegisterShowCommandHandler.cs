@@ -1,7 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
-using Showtime.Domain;
+using Showtime.ApplicationServices;
+using Showtime.Core.Domain;
 
-namespace Showtime.ApplicationServices;
+namespace Showtime.Core.Commands;
 internal class RegisterShowCommandHandler : ICommandHandler<RegisterShow>
 {
     private readonly IShowRepository _repository;

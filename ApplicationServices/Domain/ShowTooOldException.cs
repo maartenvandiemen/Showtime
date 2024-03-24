@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace Showtime.Domain;
+namespace Showtime.Core.Domain;
 public class ShowTooOldException : Exception
 {
     public ShowTooOldException()
@@ -12,10 +12,6 @@ public class ShowTooOldException : Exception
     }
 
     public ShowTooOldException(string? message, Exception? innerException) : base(message, innerException)
-    {
-    }
-
-    protected ShowTooOldException(SerializationInfo info, StreamingContext context) : base(info, context)
     {
     }
 }

@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Polly;
 using Showtime.ApplicationServices;
-using Showtime.Domain;
+using Showtime.Core.Domain;
 
 namespace Showtime.Infrastructure.Datastorage;
 public class ShowtimeRepository : ISyncStatusRepository, IShowRepository
@@ -45,17 +45,5 @@ public class ShowtimeRepository : ISyncStatusRepository, IShowRepository
     public Task<bool> ShowExistsAsync(int id)
     {
         return _dbContext.Shows.AnyAsync(s => s.Id == id);
-    }
-
-    //Used keyset pagination as described: https://learn.microsoft.com/en-us/ef/core/querying/pagination
-    public async Task<IEnumerable<Show>> FindAllShows(int lastId)
-    {
-        var shows = await _dbContext.Shows
-            .OrderBy(b => b.Id)
-            .Where(b => b.Id > lastId)
-            .Take(100)
-            .ToListAsync();
-
-        return shows;
     }
 }
