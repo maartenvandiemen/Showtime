@@ -20,11 +20,6 @@ public class Show
     {
         ArgumentNullException.ThrowIfNull(command, nameof(command));
 
-        if (command.Premiered is null || command.Premiered < new DateOnly(2014, 1, 1))
-        {
-            throw new ShowTooOldException();
-        }
-
         return new Show()
         {
             Id = command.Id,

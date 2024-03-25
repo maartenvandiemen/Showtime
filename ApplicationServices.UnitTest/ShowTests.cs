@@ -22,20 +22,6 @@ public class ShowTests
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ShowTooOldException))]
-    public void Register_CommandShowTooOld_ShowTooOldExceptionThrown()
-    {
-        //Arrange
-        RegisterShow command = new RegisterShowBuilder().Build() with { Premiered = new DateOnly(2013,12,31) };
-
-        //Act
-        Show.Register(command);
-
-        //Assert
-        //Expected exception
-    }
-
-    [TestMethod]
     public void Register_Command_CorrectShow()
     {
         //Arrange

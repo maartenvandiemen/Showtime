@@ -21,16 +21,9 @@ internal class RegisterShowCommandHandler : ICommandHandler<RegisterShow>
     {
         if (!await _repository.ShowExistsAsync(command.Id))
         {
-            try
-            {
-                var showToAdd = Show.Register(command);
+            var showToAdd = Show.Register(command);
 
-                _repository.AddShow(showToAdd);
-            }
-            catch (ShowTooOldException)
-            {
-                _logger.LogInformation($"Show with ID {command.Id} skipped. Premiered date: {command.Premiered}");
-            }
+            _repository.AddShow(showToAdd);
         }
         else
         {
