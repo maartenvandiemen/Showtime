@@ -18,31 +18,10 @@ variables:
     value: '$(Pipeline.Workspace)/.nuget/packages/'
     readonly: true
 
-resources:
-  containers:
-  - container: mssql
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    env:
-      ACCEPT_EULA: Y
-      #SA_PASSWORD defined in Build stage
-      SA_PASSWORD: $(SA_PASSWORD)
-      MSSQL_PID: Developer
-    ports: 
-      - 1433:1433
-    options: --name mssql
-
 jobs: 
 - job: Build
   pool:
-    vmImage: ubuntu-latest
-  
-  variables:
-  #Used for SQL Server password, placed in variable group. Comment group and uncomment SA_PASSWORD variable
-  - name: SA_PASSWORD
-    value: 'P2ssw0rdP2ssw0rd!'
-    
-  services:
-    mssql: mssql
+    vmImage: windows-latest
         
   steps:
   - task: PowerShell@2
@@ -93,7 +72,7 @@ jobs:
     inputs:
       command: 'custom'
       custom: 'ef'
-      arguments: 'migrations script --output $(Build.ArtifactStagingDirectory)/SQL/db.sql --idempotent --startup-project ..\WorkerService\WorkerService.csproj --context ShowDbContext --no-build --verbose --configuration ${{parameters.buildConfiguration}}'
+      arguments: 'migrations script --output $(Build.ArtifactStagingDirectory)/SQL/db.sql --idempotent --startup-project ../WorkerService/WorkerService.csproj --context ShowDbContext --no-build --verbose --configuration ${{parameters.buildConfiguration}}'
       workingDirectory: '$(Build.SourcesDirectory)/Infrastructure'
     displayName: 'Create idempotent SQL'
 
