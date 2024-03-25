@@ -93,8 +93,8 @@ jobs:
     inputs:
       command: 'custom'
       custom: 'ef'
-      arguments: 'migrations script --output $(Build.ArtifactStagingDirectory)/SQL/db.sql --idempotent --project WorkerService.csproj --context ShowDbContext --no-build --verbose --configuration ${{parameters.buildConfiguration}}'
-      workingDirectory: '$(Build.SourcesDirectory)/WorkerService'
+      arguments: 'migrations script --output $(Build.ArtifactStagingDirectory)/SQL/db.sql --idempotent --startup-project ..\WorkerService\WorkerService.csproj --context ShowDbContext --no-build --verbose --configuration ${{parameters.buildConfiguration}}'
+      workingDirectory: '$(Build.SourcesDirectory)/Infrastructure'
     displayName: 'Create idempotent SQL'
     env:
       #Pass environment variable dummy. So the migration script will not be created against the InMemory database.
