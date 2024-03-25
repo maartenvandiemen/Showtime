@@ -1,6 +1,11 @@
 trigger:
 - main
 
+parameters:
+- name: buildConfiguration
+  type: string
+  default: 'Release'
+
 variables:
   - name: DOTNET_NOLOGO
     value: true
