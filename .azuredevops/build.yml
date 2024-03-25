@@ -52,13 +52,31 @@ jobs:
       key: 'nuget | "$(Agent.OS)" | **/packages.lock.json,!**/bin/**,!**/obj/**'
       path: '$(NUGET_PACKAGES)'
       cacheHitVar: 'CACHE_RESTORED'
+
+  - task: DotNetCoreCLI@2
+    displayName: Dotnet restore '**/*.csproj'
+    condition: ne(variables.CACHE_RESTORED, true)
+    inputs:
+      command: 'restore'
+      projects: '**/*.csproj'
+      restoreArguments: '--locked-mode'
+      feedsToUse: 'select'
          
   - task: DotNetCoreCLI@2
-    displayName: Dotnet build
+    displayName: Dotnet build - pipeline cache restored
+    condition: eq(variables.CACHE_RESTORED, true)
     inputs:
       command: 'build'
       projects: '**/*.csproj'
       arguments: '--configuration ${{parameters.buildConfiguration}}'
+    
+  - task: DotNetCoreCLI@2
+    displayName: Dotnet build - pipeline cache not restored
+    condition: ne(variables.CACHE_RESTORED, true)
+    inputs:
+      command: 'build'
+      projects: '**/*.csproj'
+      arguments: '--no-restore --configuration ${{parameters.buildConfiguration}}' 
 
   - task: DotNetCoreCLI@2
     inputs:
@@ -76,17 +94,9 @@ jobs:
       workingDirectory: '$(Build.SourcesDirectory)/Infrastructure'
     displayName: 'Create idempotent SQL'
 
-  - script: |
-        sqlcmd -S 127.0.0.1,1433 -U SA -P '$(SA_PASSWORD)' -Q 'CREATE DATABASE ShowtimeDB' -b
-        sqlcmd -S 127.0.0.1,1433 -U SA -P '$(SA_PASSWORD)' -i db.sql -d ShowtimeDB -b
-    workingDirectory: '$(Build.ArtifactStagingDirectory)/SQL'
-    displayName: 'Create database and tables for unit tests'
-    timeoutInMinutes: 1
   - task: DotNetCoreCLI@2
     displayName: Dotnet test '**/*Tests.csproj'
     inputs:
       command: 'test'
       projects: '**/*Tests.csproj'
       arguments: '--no-restore --nologo --configuration ${{parameters.buildConfiguration}}'
-    env:
-      integrationtests_ConnectionStrings__TodoDb: 'Server=127.0.0.1,1433;Database=ShowtimeDB;User Id=SA;Password=$(SA_PASSWORD);TrustServerCertificate=true;'
