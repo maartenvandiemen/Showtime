@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Polly;
-using Showtime.ApplicationServices;
 using Showtime.Infrastructure.Datastorage;
 using Showtime.Infrastructure.ExternalRepository;
 

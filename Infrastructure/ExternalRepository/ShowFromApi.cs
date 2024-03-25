@@ -1,4 +1,4 @@
-﻿using Showtime.Core.Commands;
+﻿using Showtime.Infrastructure.Datastorage;
 
 namespace Showtime.Infrastructure.ExternalRepository;
 public record ShowFromApi
@@ -15,9 +15,9 @@ public record ShowFromApi
     public IReadOnlyCollection<string> Genres { get; init; }
     public required string? Summary { get; init; }
 
-    public RegisterShow ToCommand()
+    public Show ToDatabase()
     {
-        return new RegisterShow() 
+        return new Show() 
         {
             Id = Id,
             Name = Name,

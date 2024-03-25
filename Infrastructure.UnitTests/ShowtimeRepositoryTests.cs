@@ -1,6 +1,7 @@
 ﻿using AutoFixture;
 using Microsoft.EntityFrameworkCore;
-using Showtime.Core.Domain;
+using Microsoft.Extensions.Logging;
+using Moq;
 using Showtime.Infrastructure.Datastorage;
 using Testing;
 
@@ -11,6 +12,7 @@ public class ShowtimeRepositoryTests
     private Fixture _fixture = CustomFixture.Create();
     private ShowDbContext _context = null!;
     private ShowtimeRepository _sut = null!;
+    private ILogger<ShowtimeRepository> _logger = null!;
 
     [TestInitialize]
     public void TestInitialize()
@@ -20,8 +22,9 @@ public class ShowtimeRepositoryTests
            .Options;
 
         _context = new ShowDbContext(options);
+        _logger = new Mock<ILogger<ShowtimeRepository>>().Object;
 
-        _sut = new ShowtimeRepository(_context);
+        _sut = new ShowtimeRepository(_context, _logger);
     }
 
     [TestCleanup]
@@ -39,7 +42,21 @@ public class ShowtimeRepositoryTests
         _context = null!;
 
         //Act
-        _ = new ShowtimeRepository(_context);
+        _ = new ShowtimeRepository(_context, _logger);
+
+        //Assert
+        //Expected exception
+    }
+
+    [TestMethod]
+    [ExpectedException(typeof(ArgumentNullException))]
+    public void Constructor_NullLogger_ArgumentNullExceptionThrown()
+    {
+        //Arrange
+        _logger = null!;
+
+        //Act
+        _ = new ShowtimeRepository(_context, _logger);
 
         //Assert
         //Expected exception
@@ -143,9 +160,23 @@ public class ShowtimeRepositoryTests
         var show = GenerateRandomShow();
 
         //Act
-        _sut.AddShow(show);
+        await _sut.AddShow(show);
         await _context.CommitAsync();
 
+        //Assert
+        Assert.AreEqual(1, _context.Shows.Count());
+    }
+
+    [TestMethod]
+    public async Task AddShow_ExistingShow_NoAdditionalShowAdded()
+    {
+        //Arrange
+        var existingShowId = await AddRandomShow();
+        var showToAdd = GenerateRandomShow(existingShowId);
+
+        //Act
+        await _sut.AddShow(showToAdd);
+        await _context.CommitAsync();
 
         //Assert
         Assert.AreEqual(1, _context.Shows.Count());
@@ -161,11 +192,11 @@ public class ShowtimeRepositoryTests
         return show.Id;
     }
 
-    private Show GenerateRandomShow()
+    private Show GenerateRandomShow(int? id = null)
     {
         return new Show
         {
-            Id = _fixture.Create<int>(),
+            Id = id == null ? _fixture.Create<int>() : id.GetValueOrDefault(),
             Name = _fixture.Create<string>(),
             Language = _fixture.Create<string>(),
             Summary = _fixture.Create<string>()

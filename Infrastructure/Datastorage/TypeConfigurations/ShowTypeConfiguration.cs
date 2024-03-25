@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Showtime.Core.Domain;
 
 namespace Showtime.Infrastructure.Datastorage.TypeConfigurations;
 internal class ShowTypeConfiguration : IEntityTypeConfiguration<Show>

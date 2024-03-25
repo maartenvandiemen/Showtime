@@ -1,5 +1,4 @@
-﻿using Showtime.Core.Commands;
-using Showtime.Infrastructure;
+﻿using Showtime.Infrastructure;
 using Showtime.Infrastructure.Datastorage;
 using Showtime.Infrastructure.ExternalRepository;
 
@@ -9,25 +8,25 @@ internal class ShowScraperService : IShowScraperService
     private readonly ILogger<ShowScraperService> _logger;
     private readonly ISyncStatusRepository _syncStatusRepository;
     private readonly ITvMazeRepository _tvMazeRepository;
-    private readonly ICommandHandler<RegisterShow> _commandHandler;
+    private readonly IShowRepository _showRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public ShowScraperService(ILogger<ShowScraperService> logger, 
         ISyncStatusRepository syncStatusRepository, 
         ITvMazeRepository tvMazeRepository,
-        ICommandHandler<RegisterShow> commandHandler,
+        IShowRepository showRepository,
         IUnitOfWork unitOfWork)
     {
         ArgumentNullException.ThrowIfNull(logger, nameof(logger));
         ArgumentNullException.ThrowIfNull(syncStatusRepository, nameof(syncStatusRepository));
         ArgumentNullException.ThrowIfNull(tvMazeRepository, nameof(tvMazeRepository));
-        ArgumentNullException.ThrowIfNull(commandHandler, nameof(commandHandler));
+        ArgumentNullException.ThrowIfNull(showRepository, nameof(showRepository));
         ArgumentNullException.ThrowIfNull(unitOfWork, nameof(unitOfWork));
 
         _logger = logger;
         _syncStatusRepository = syncStatusRepository;
         _tvMazeRepository = tvMazeRepository;
-        _commandHandler = commandHandler;
+        _showRepository = showRepository;
         _unitOfWork = unitOfWork;
     }
 
@@ -48,7 +47,7 @@ internal class ShowScraperService : IShowScraperService
             firstIteration = false;
             if (!continueSearch)
             {
-                _logger.LogInformation($"Show page number {pagenumber} NOT found. Stopping search.");
+                _logger.LogInformation("Show page number {pagenumber} NOT found. Stopping search.", pagenumber);
                 break;
             }
         }
@@ -60,7 +59,7 @@ internal class ShowScraperService : IShowScraperService
 
         if (!showsFromApi.Any())
         {
-            _logger.LogDebug($"Pagenumber {pagenumber} did not return any results.");
+            _logger.LogDebug("Pagenumber {pagenumber} did not return any results.", pagenumber);
             return false;
         }
 
@@ -72,11 +71,11 @@ internal class ShowScraperService : IShowScraperService
                 break;
             }
 
-            _logger.LogDebug($"Adding show ID: {showFromApi.Id} - Name: {showFromApi.Name}");
-            await _commandHandler.HandleAsync(showFromApi.ToCommand());
+            _logger.LogDebug("Adding show ID: {showId} - Name: {showName}", showFromApi.Id, showFromApi.Name);
+            await _showRepository.AddShow(showFromApi.ToDatabase());
         }
 
-        _logger.LogDebug($"ShowDB: Adding show page number: {pagenumber}");
+        _logger.LogDebug("ShowDB: Adding show page number: {pagenumber}", pagenumber);
         await _syncStatusRepository.AddPage(pagenumber);
         return true;
     }

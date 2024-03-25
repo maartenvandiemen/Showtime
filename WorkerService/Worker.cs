@@ -1,4 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
 using Showtime.WorkerService;
 
 namespace WorkerService;

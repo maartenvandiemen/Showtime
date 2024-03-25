@@ -22,7 +22,7 @@ public class TvMazeRepository : ITvMazeRepository
         List<ShowFromApi> showsFromApi = new();
         try
         {
-            _logger.LogDebug($"Getting shows for page: {showPageNumber}");
+            _logger.LogDebug("Getting shows for page: {showPageNumber}", showPageNumber);
 
             var showsRetrievedFromApi = await _httpClient.GetFromJsonAsync<IEnumerable<ShowFromApi>>($"shows?page={showPageNumber}", cancellationToken);
 
@@ -35,11 +35,11 @@ public class TvMazeRepository : ITvMazeRepository
         {
             if (e.StatusCode == HttpStatusCode.NotFound)
             {
-                _logger.LogError($"{showPageNumber} NOT FOUND.");
+                _logger.LogError("{showPageNumber} NOT FOUND.", showPageNumber);
                 return Enumerable.Empty<ShowFromApi>();
             }
 
-            _logger.LogError($"HTTP error occurred. Status code: {e.StatusCode} - error: {e.Message}");
+            _logger.LogError("HTTP error occurred. Status code: {statusCode} - error: {message}", e.StatusCode, e.Message);
             throw;
         }
 

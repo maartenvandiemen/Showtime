@@ -1,7 +1,6 @@
 using AutoFixture;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Showtime.Core.Commands;
 using Showtime.Infrastructure;
 using Showtime.Infrastructure.Datastorage;
 using Showtime.Infrastructure.ExternalRepository;
@@ -18,7 +17,7 @@ public class ShowScraperServiceTests
     private Mock<ILogger<ShowScraperService>> _loggerMock = null!;
     private Mock<ISyncStatusRepository> _syncStatusRepositoryMock = null!;
     private Mock<ITvMazeRepository> _tvMazeRepositoryMock = null!;
-    private Mock<ICommandHandler<RegisterShow>> _commandHanderMock = null!;
+    private Mock<IShowRepository> _showRepositoryMock = null!;
     private Mock<IUnitOfWork> _unitOfWorkMock = null!;
 
     [TestInitialize]
@@ -27,7 +26,7 @@ public class ShowScraperServiceTests
         _loggerMock = new Mock<ILogger<ShowScraperService>>();
         _syncStatusRepositoryMock = new Mock<ISyncStatusRepository>();
         _tvMazeRepositoryMock = new Mock<ITvMazeRepository>();
-        _commandHanderMock = new Mock<ICommandHandler<RegisterShow>>();
+        _showRepositoryMock = new Mock<IShowRepository>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
 
         _syncStatusRepositoryMock.SetupSequence(method => method.GetLastStoredPage())
@@ -37,7 +36,7 @@ public class ShowScraperServiceTests
             .ReturnsAsync(0);
 
         _sut = new ShowScraperService(_loggerMock.Object, _syncStatusRepositoryMock.Object, _tvMazeRepositoryMock.Object,
-            _commandHanderMock.Object, _unitOfWorkMock.Object);
+            _showRepositoryMock.Object, _unitOfWorkMock.Object);
     }
 
     #region constructor
@@ -47,7 +46,7 @@ public class ShowScraperServiceTests
     {
         //Arrange & Act
         _ = new ShowScraperService(null!, _syncStatusRepositoryMock.Object, _tvMazeRepositoryMock.Object,
-            _commandHanderMock.Object, _unitOfWorkMock.Object);
+            _showRepositoryMock.Object, _unitOfWorkMock.Object);
 
         //Expected exception
     }
@@ -58,7 +57,7 @@ public class ShowScraperServiceTests
     {
         //Arrange & Act
         _ = new ShowScraperService(_loggerMock.Object, null!, _tvMazeRepositoryMock.Object,
-            _commandHanderMock.Object, _unitOfWorkMock.Object);
+            _showRepositoryMock.Object, _unitOfWorkMock.Object);
 
         //Expected exception
     }
@@ -69,14 +68,14 @@ public class ShowScraperServiceTests
     {
         //Arrange & Act
         _ = new ShowScraperService(_loggerMock.Object, _syncStatusRepositoryMock.Object, null!,
-            _commandHanderMock.Object, _unitOfWorkMock.Object);
+            _showRepositoryMock.Object, _unitOfWorkMock.Object);
 
         //Expected exception
     }
 
     [TestMethod]
     [ExpectedException(typeof(ArgumentNullException))]
-    public void Constructor_CommandHandlerNull_ArgumentNullExceptionThrown()
+    public void Constructor_ShowRepositoryNull_ArgumentNullExceptionThrown()
     {
         //Arrange & Act
         _ = new ShowScraperService(_loggerMock.Object, _syncStatusRepositoryMock.Object, _tvMazeRepositoryMock.Object,
@@ -91,7 +90,7 @@ public class ShowScraperServiceTests
     {
         //Arrange & Act
         _ = new ShowScraperService(_loggerMock.Object, _syncStatusRepositoryMock.Object, _tvMazeRepositoryMock.Object,
-            _commandHanderMock.Object, null!);
+            _showRepositoryMock.Object, null!);
 
         //Expected exception
     }
@@ -136,7 +135,7 @@ public class ShowScraperServiceTests
     }
 
     [TestMethod]
-    public async Task LoadShows_CommandHandlerCalled_SameAmountAsRetrievedTvShows()
+    public async Task LoadShows_RepositoryCalled_SameAmountAsRetrievedTvShows()
     {
         //Arrange
         _tvMazeRepositoryMock.SetupSequence(method => method.LoadShowsFromApiByPagenumber(It.IsAny<int>(), It.IsAny<CancellationToken>()))
@@ -147,6 +146,6 @@ public class ShowScraperServiceTests
         await _sut.LoadShowsAsync(new CancellationToken());
 
         //Assert
-        _commandHanderMock.Verify(method => method.HandleAsync(It.IsAny<RegisterShow>()), Times.Exactly(240));
+        _showRepositoryMock.Verify(method => method.AddShow(It.IsAny<Show>()), Times.Exactly(240));
     }
 }

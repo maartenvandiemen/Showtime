@@ -1,18 +1,19 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Polly;
-using Showtime.ApplicationServices;
-using Showtime.Core.Domain;
+using Microsoft.Extensions.Logging;
 
 namespace Showtime.Infrastructure.Datastorage;
 public class ShowtimeRepository : ISyncStatusRepository, IShowRepository
 {
     private readonly ShowDbContext _dbContext;
+    private readonly ILogger<ShowtimeRepository> _logger;
 
-    public ShowtimeRepository(ShowDbContext dbContext)
+    public ShowtimeRepository(ShowDbContext dbContext, ILogger<ShowtimeRepository> logger)
     {
         ArgumentNullException.ThrowIfNull(dbContext, nameof(dbContext));
+        ArgumentNullException.ThrowIfNull(logger, nameof(logger));
 
         _dbContext = dbContext;
+        _logger = logger;
     }
 
     public async Task AddPage(int pagenumber)
@@ -31,9 +32,16 @@ public class ShowtimeRepository : ISyncStatusRepository, IShowRepository
         }
     }
 
-    public void AddShow(Show show)
+    public async Task AddShow(Show show)
     {
-        _dbContext.Shows.Add(show);
+        if (!await ShowExistsAsync(show.Id))
+        {
+            _dbContext.Shows.Add(show);
+        }
+        else
+        {
+            _logger.LogDebug("Show with ID {showId} already exists. Skipping...", show.Id);
+        }        
     }
 
     public async Task<int> GetLastStoredPage()

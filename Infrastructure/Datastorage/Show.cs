@@ -1,8 +1,7 @@
-﻿namespace Showtime.Core.Commands;
-
-public record RegisterShow : Command
+﻿namespace Showtime.Infrastructure.Datastorage;
+public record Show
 {
-    public RegisterShow()
+    public Show()
     {
         Genres = new List<string>().AsReadOnly();
     }
