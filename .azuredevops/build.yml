@@ -101,8 +101,8 @@ jobs:
       ASPNETCORE_ENVIRONMENT: 'DUMMY'
 
   - script: |
-        sqlcmd -S 127.0.0.1,1433 -U SA -P '$(SA_PASSWORD)' -Q 'CREATE DATABASE ${{parameters.testDatabasename}}' -b
-        sqlcmd -S 127.0.0.1,1433 -U SA -P '$(SA_PASSWORD)' -i db.sql -d ${{parameters.testDatabasename}} -b
+        sqlcmd -S 127.0.0.1,1433 -U SA -P '$(SA_PASSWORD)' -Q 'CREATE DATABASE ShowtimeDB' -b
+        sqlcmd -S 127.0.0.1,1433 -U SA -P '$(SA_PASSWORD)' -i db.sql -d ShowtimeDB -b
     workingDirectory: '$(Build.ArtifactStagingDirectory)/SQL'
     displayName: 'Create database and tables for unit tests'
     timeoutInMinutes: 1
@@ -113,4 +113,4 @@ jobs:
       projects: '**/*Tests.csproj'
       arguments: '--no-restore --nologo --configuration ${{parameters.buildConfiguration}}'
     env:
-      integrationtests_ConnectionStrings__TodoDb: 'Server=127.0.0.1,1433;Database=${{parameters.testDatabasename}};User Id=SA;Password=$(SA_PASSWORD);TrustServerCertificate=true;'
+      integrationtests_ConnectionStrings__TodoDb: 'Server=127.0.0.1,1433;Database=ShowtimeDB;User Id=SA;Password=$(SA_PASSWORD);TrustServerCertificate=true;'
