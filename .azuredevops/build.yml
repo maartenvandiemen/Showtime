@@ -96,9 +96,6 @@ jobs:
       arguments: 'migrations script --output $(Build.ArtifactStagingDirectory)/SQL/db.sql --idempotent --startup-project ..\WorkerService\WorkerService.csproj --context ShowDbContext --no-build --verbose --configuration ${{parameters.buildConfiguration}}'
       workingDirectory: '$(Build.SourcesDirectory)/Infrastructure'
     displayName: 'Create idempotent SQL'
-    env:
-      #Pass environment variable dummy. So the migration script will not be created against the InMemory database.
-      ASPNETCORE_ENVIRONMENT: 'DUMMY'
 
   - script: |
         sqlcmd -S 127.0.0.1,1433 -U SA -P '$(SA_PASSWORD)' -Q 'CREATE DATABASE ShowtimeDB' -b
