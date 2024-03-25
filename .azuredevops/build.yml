@@ -86,7 +86,7 @@ jobs:
       command: 'custom'
       custom: 'tool'
       arguments: 'restore'
-      workingDirectory: '$(Build.SourcesDirectory)/WorkerService'
+      workingDirectory: '$(Build.SourcesDirectory)/Infrastructure'
     displayName: 'Restore dotnet tools'
 
   - task: DotNetCoreCLI@2
