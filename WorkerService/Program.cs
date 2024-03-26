@@ -1,15 +1,24 @@
+using Microsoft.Azure.WebJobs;
 using Showtime.Infrastructure;
 using Showtime.WorkerService;
-using WorkerService;
 
-IHost host = Host.CreateDefaultBuilder(args)
-    .ConfigureServices((context, services) =>
-    {
-        services.AddInfrastructure(context.Configuration, true);
+var builder = new HostBuilder();
+builder.ConfigureWebJobs();
+builder.ConfigureServices((context, services) =>
+{
+    services.AddInfrastructure(context.Configuration);
+    services.AddTransient<IShowScraperService, ShowScraperService>();
+});
 
-        services.AddHostedService<Worker>();
-        services.AddTransient<IShowScraperService, ShowScraperService>();        
-    })
-    .Build();
+var host = builder.Build();
+var cancellationToken = new WebJobsShutdownWatcher().Token;
 
-host.Run();
+using (host)
+{
+    var jobHost = host.Services.GetService(typeof(IJobHost)) as JobHost;
+    await host.StartAsync();
+
+    await jobHost!.CallAsync("ExecuteAsync", new { cancellationToken }, cancellationToken);
+
+    await host.StopAsync();
+}

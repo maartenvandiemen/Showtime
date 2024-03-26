@@ -11,15 +11,14 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddInfrastructure(
         this IServiceCollection services,
-        IConfiguration configuration,
-        bool isWorker)
+        IConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(services, nameof(services));
         ArgumentNullException.ThrowIfNull(configuration, nameof(configuration));
 
         services
             .AddDatabase(configuration)
-            .AddExternalRepositories(configuration, isWorker);
+            .AddExternalRepositories(configuration);
 
         return services;
     }
@@ -38,7 +37,7 @@ public static class ServiceCollectionExtensions
             .AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<ShowDbContext>());
     }
 
-    private static IServiceCollection AddExternalRepositories(this IServiceCollection services, IConfiguration configuration, bool isWorker)
+    private static IServiceCollection AddExternalRepositories(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<ITvMazeRepository, TvMazeRepository>();
         services.AddScoped<ISyncStatusRepository, ShowtimeRepository>();
@@ -49,10 +48,7 @@ public static class ServiceCollectionExtensions
             client.BaseAddress = new Uri(configuration["baseUrlTvMazeApi"]!);
         });
 
-        if (isWorker)
-        {
-            httpClient.AddRetryPolicy();
-        }
+        httpClient.AddRetryPolicy();
 
         return services;
     }
