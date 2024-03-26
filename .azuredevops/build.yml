@@ -91,3 +91,10 @@ jobs:
       command: 'test'
       projects: '**/*Tests.csproj'
       arguments: '--no-restore --nologo --configuration ${{parameters.buildConfiguration}}'
+
+  - task: PublishPipelineArtifact@1
+    displayName: Publish pipeline artifact 'SQL'
+    inputs:
+      targetPath: '$(Build.ArtifactStagingDirectory)/SQL'
+      artifact: 'database'
+      publishLocation: 'pipeline'
