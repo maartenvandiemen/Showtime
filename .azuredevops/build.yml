@@ -1,6 +1,9 @@
 trigger:
 - main
 
+pool:
+  vmImage: windows-latest
+
 parameters:
 - name: buildConfiguration
   type: string
@@ -18,100 +21,132 @@ variables:
     value: '$(Pipeline.Workspace)/.nuget/packages/'
     readonly: true
 
-jobs: 
-- job: Build
-  pool:
-    vmImage: windows-latest
-        
-  steps:
-  - task: PowerShell@2
-    displayName: 'Determine if dotnet is installed'
-    inputs:
-      targetType: 'inline'
-      script: |
-        $installedSdks = dotnet --list-sdks
-        $globalJsonLocation = Join-Path -Path "$(System.DefaultWorkingDirectory)" -ChildPath "global.json"
-        $globalJson = Get-Content $globalJsonLocation -Raw | ConvertFrom-Json 
-        $dotnetVersionGlobalJson = $globalJson.sdk.version
-        $match = $installedSdks -like ($dotnetVersionGlobalJson + "*")
-        if($match){
-          Write-Host "##vso[task.setvariable variable=isDotNetVersionInstalled;]true"
-        }
-      pwsh: true
+stages:
+- stage: Build
+  dependsOn: []
+  jobs:
+  - job: Build
+    steps:
+    - task: PowerShell@2
+      displayName: 'Determine if dotnet is installed'
+      inputs:
+        targetType: 'inline'
+        script: |
+          $installedSdks = dotnet --list-sdks
+          $globalJsonLocation = Join-Path -Path "$(System.DefaultWorkingDirectory)" -ChildPath "global.json"
+          $globalJson = Get-Content $globalJsonLocation -Raw | ConvertFrom-Json 
+          $dotnetVersionGlobalJson = $globalJson.sdk.version
+          $match = $installedSdks -like ($dotnetVersionGlobalJson + "*")
+          if($match){
+            Write-Host "##vso[task.setvariable variable=isDotNetVersionInstalled;]true"
+          }
+        pwsh: true
 
-  - task: UseDotNet@2
-    displayName: 'Install dotnet'
-    condition: and(succeeded(), ne(variables['isDotNetVersionInstalled'], 'true'))
-    inputs:
-      packageType: 'sdk'
-      useGlobalJson: true
-  
-  - task: Cache@2
-    displayName: 'Restore cache for NuGet'
-    inputs:
-      key: 'nuget | "$(Agent.OS)" | **/packages.lock.json,!**/bin/**,!**/obj/**'
-      path: '$(NUGET_PACKAGES)'
-      cacheHitVar: 'CACHE_RESTORED'
+    - task: UseDotNet@2
+      displayName: 'Install dotnet'
+      condition: and(succeeded(), ne(variables['isDotNetVersionInstalled'], 'true'))
+      inputs:
+        packageType: 'sdk'
+        useGlobalJson: true
+    
+    - task: Cache@2
+      displayName: 'Restore cache for NuGet'
+      inputs:
+        key: 'nuget | "$(Agent.OS)" | **/packages.lock.json,!**/bin/**,!**/obj/**'
+        path: '$(NUGET_PACKAGES)'
+        cacheHitVar: 'CACHE_RESTORED'
 
-  - task: DotNetCoreCLI@2
-    displayName: Dotnet restore '**/*.csproj'
-    condition: ne(variables.CACHE_RESTORED, true)
-    inputs:
-      command: 'restore'
-      projects: 'Showtime.sln'
-      restoreArguments: '--locked-mode'
-      feedsToUse: 'select'
-         
-  - task: DotNetCoreCLI@2
-    displayName: Dotnet build - pipeline cache restored
-    inputs:
-      command: 'build'
-      projects: 'Showtime.sln'
-      arguments: '--configuration ${{parameters.buildConfiguration}}'
+    - task: DotNetCoreCLI@2
+      displayName: Dotnet restore '**/*.csproj'
+      condition: ne(variables.CACHE_RESTORED, true)
+      inputs:
+        command: 'restore'
+        projects: 'Showtime.sln'
+        restoreArguments: '--locked-mode'
+        feedsToUse: 'select'
+          
+    - task: DotNetCoreCLI@2
+      displayName: Dotnet build - pipeline cache restored
+      inputs:
+        command: 'build'
+        projects: 'Showtime.sln'
+        arguments: '--configuration ${{parameters.buildConfiguration}}'
 
-  - task: DotNetCoreCLI@2
-    inputs:
-      command: 'custom'
-      custom: 'tool'
-      arguments: 'restore'
-      workingDirectory: '$(Build.SourcesDirectory)/Infrastructure'
-    displayName: 'Restore dotnet tools'
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'custom'
+        custom: 'tool'
+        arguments: 'restore'
+        workingDirectory: '$(Build.SourcesDirectory)/Infrastructure'
+      displayName: 'Restore dotnet tools'
 
-  - task: DotNetCoreCLI@2
-    inputs:
-      command: 'custom'
-      custom: 'ef'
-      arguments: 'migrations script --output $(Build.ArtifactStagingDirectory)/SQL/db.sql --idempotent --project Infrastructure.csproj --startup-project ../WorkerService/WorkerService.csproj --context ShowDbContext --no-build --verbose --configuration ${{parameters.buildConfiguration}}'
-      workingDirectory: '$(Build.SourcesDirectory)/Infrastructure'
-    displayName: 'Create idempotent SQL'
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'custom'
+        custom: 'ef'
+        arguments: 'migrations script --output $(Build.ArtifactStagingDirectory)/SQL/db.sql --idempotent --project Infrastructure.csproj --startup-project ../WorkerService/WorkerService.csproj --context ShowDbContext --no-build --verbose --configuration ${{parameters.buildConfiguration}}'
+        workingDirectory: '$(Build.SourcesDirectory)/Infrastructure'
+      displayName: 'Create idempotent SQL'
 
-  - task: DotNetCoreCLI@2
-    displayName: Dotnet test '**/*Tests.csproj'
-    inputs:
-      command: 'test'
-      projects: '**/*Tests.csproj'
-      arguments: '--no-restore --nologo --configuration ${{parameters.buildConfiguration}}'
+    - task: DotNetCoreCLI@2
+      displayName: Dotnet test '**/*Tests.csproj'
+      inputs:
+        command: 'test'
+        projects: '**/*Tests.csproj'
+        arguments: '--no-restore --nologo --configuration ${{parameters.buildConfiguration}}'
 
-  - task: DotNetCoreCLI@2
-    displayName: Dotnet publish '**/WorkerService.csproj' 
-    inputs:
-      command: 'publish'
-      publishWebProjects: false
-      projects: '**/WorkerService.csproj' 
-      arguments: '--no-restore --configuration ${{parameters.buildConfiguration}} --nologo --no-build --output $(Build.ArtifactStagingDirectory)/WorkerService'
-      modifyOutputPath: false
-      zipAfterPublish: false
+    - task: DotNetCoreCLI@2
+      displayName: Dotnet publish '**/WorkerService.csproj' 
+      inputs:
+        command: 'publish'
+        publishWebProjects: false
+        projects: '**/WorkerService.csproj' 
+        arguments: '--no-restore --configuration ${{parameters.buildConfiguration}} --nologo --no-build --output $(Build.ArtifactStagingDirectory)/WorkerService'
+        modifyOutputPath: false
+        zipAfterPublish: false
 
-  - task: PublishPipelineArtifact@1
-    displayName: Publish pipeline artifact 'SQL'
-    inputs:
-      targetPath: '$(Build.ArtifactStagingDirectory)/SQL'
-      artifact: 'database'
-      publishLocation: 'pipeline'
+    - task: PublishPipelineArtifact@1
+      displayName: Publish pipeline artifact 'SQL'
+      inputs:
+        targetPath: '$(Build.ArtifactStagingDirectory)/SQL'
+        artifact: 'database'
+        publishLocation: 'pipeline'
 
-  - task: PublishPipelineArtifact@1
-    displayName: Publish pipeline artifact 'WebJob'
-    inputs:
-      targetPath: '$(Build.ArtifactStagingDirectory)/WorkerService'
-      artifact: 'webjob'
-      publishLocation: 'pipeline'
+    - task: PublishPipelineArtifact@1
+      displayName: Publish pipeline artifact 'WebJob'
+      inputs:
+        targetPath: '$(Build.ArtifactStagingDirectory)/WorkerService'
+        artifact: 'webjob'
+        publishLocation: 'pipeline'
+
+    - task: PublishPipelineArtifact@1
+      displayName: Publish pipeline artifact 'infraCode'
+      inputs:
+        targetPath: '$(Build.SourcesDirectory)/Deployment'
+        artifact: 'infraCode'
+        publishLocation: 'pipeline'
+
+- stage: Deploy
+  dependsOn: [Build]
+  jobs:
+  - deployment: Deployment
+    environment: showtime-O
+    variables:
+    - group: Showtime-O
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: AzureResourceManagerTemplateDeployment@3
+            inputs:
+              deploymentScope: 'Resource Group'
+              azureResourceManagerConnection: 'Azure'
+              subscriptionId: $(subscriptionId)
+              action: 'Create Or Update Resource Group'
+              resourceGroupName: $(resourcegroupName)
+              location: '$(azure_region)'
+              templateLocation: 'Linked artifact'
+              csmFile: '$(Pipeline.Workspace)/infraCode/main.bicep'
+              overrideParameters: '-applicationname showtime -sqlAdministratorLoginUser $(showtimeSqlAdminUser) -sqlAdministratorLoginPassword $(showtimeSqlAdminpassword)'
+              deploymentMode: 'Incremental'
+              deploymentOutputs: deploymentOutputs
