@@ -81,7 +81,7 @@ jobs:
     inputs:
       command: 'custom'
       custom: 'ef'
-      arguments: 'migrations script --output $(Build.ArtifactStagingDirectory)/SQL/db.sql --idempotent --startup-project ../WorkerService/WorkerService.csproj --context ShowDbContext --no-build --verbose --configuration ${{parameters.buildConfiguration}}'
+      arguments: 'migrations script --output $(Build.ArtifactStagingDirectory)/SQL/db.sql --idempotent --project Infrastructure.csproj --startup-project ../WorkerService/WorkerService.csproj --context ShowDbContext --no-build --verbose --configuration ${{parameters.buildConfiguration}}'
       workingDirectory: '$(Build.SourcesDirectory)/Infrastructure'
     displayName: 'Create idempotent SQL'
 
