@@ -92,9 +92,26 @@ jobs:
       projects: '**/*Tests.csproj'
       arguments: '--no-restore --nologo --configuration ${{parameters.buildConfiguration}}'
 
+  - task: DotNetCoreCLI@2
+    displayName: Dotnet publish '**/WorkerService.csproj' 
+    inputs:
+      command: 'publish'
+      publishWebProjects: false
+      projects: '**/WorkerService.csproj' 
+      arguments: '--no-restore --configuration ${{parameters.buildConfiguration}} --nologo --no-build --output $(Build.ArtifactStagingDirectory)/WorkerService'
+      modifyOutputPath: false
+      zipAfterPublish: false
+
   - task: PublishPipelineArtifact@1
     displayName: Publish pipeline artifact 'SQL'
     inputs:
       targetPath: '$(Build.ArtifactStagingDirectory)/SQL'
       artifact: 'database'
+      publishLocation: 'pipeline'
+
+  - task: PublishPipelineArtifact@1
+    displayName: Publish pipeline artifact 'WebJob'
+    inputs:
+      targetPath: '$(Build.ArtifactStagingDirectory)/WorkerService'
+      artifact: 'webjob'
       publishLocation: 'pipeline'
