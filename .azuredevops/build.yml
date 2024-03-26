@@ -64,19 +64,10 @@ jobs:
          
   - task: DotNetCoreCLI@2
     displayName: Dotnet build - pipeline cache restored
-    condition: eq(variables.CACHE_RESTORED, true)
     inputs:
       command: 'build'
       projects: 'Showtime.sln'
       arguments: '--configuration ${{parameters.buildConfiguration}}'
-    
-  - task: DotNetCoreCLI@2
-    displayName: Dotnet build - pipeline cache not restored
-    condition: ne(variables.CACHE_RESTORED, true)
-    inputs:
-      command: 'build'
-      projects: 'Showtime.sln'
-      arguments: '--no-restore --configuration ${{parameters.buildConfiguration}}' 
 
   - task: DotNetCoreCLI@2
     inputs:
